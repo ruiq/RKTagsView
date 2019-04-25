@@ -452,6 +452,7 @@ const CGFloat RKTagsViewAutomaticDimension = -0.0001;
   }
     UITextRange *markedRange = [self.inputTextField markedTextRange];
     if (markedRange) {
+        [self scrollIfNeeded];
         return ;
     }
   NSMutableArray *tags = [[(self.inputTextField.text ?: @"") componentsSeparatedByCharactersInSet:self.deliminater] mutableCopy];
@@ -470,19 +471,24 @@ const CGFloat RKTagsViewAutomaticDimension = -0.0001;
   [self setNeedsLayout];
   [self layoutIfNeeded];
   // scroll if needed
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    if (_scrollsHorizontally) {
-      if (self.scrollView.contentSize.width > self.bounds.size.width) {
-        CGPoint leftOffset = CGPointMake(self.scrollView.contentSize.width - self.bounds.size.width, -self.scrollView.contentInset.top);
-        [self.scrollView setContentOffset:leftOffset animated:YES];
-      }
-    } else {
-      if (self.scrollView.contentInset.top + self.scrollView.contentSize.height > self.bounds.size.height) {
-        CGPoint bottomOffset = CGPointMake(-self.scrollView.contentInset.left, self.scrollView.contentSize.height - self.bounds.size.height - (-self.scrollView.contentInset.top));
-        [self.scrollView setContentOffset:bottomOffset animated:YES];
-      }
-    }
-  });
+    [self scrollIfNeeded];
+}
+
+-(void)scrollIfNeeded
+{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (_scrollsHorizontally) {
+            if (self.scrollView.contentSize.width > self.bounds.size.width) {
+                CGPoint leftOffset = CGPointMake(self.scrollView.contentSize.width - self.bounds.size.width, -self.scrollView.contentInset.top);
+                [self.scrollView setContentOffset:leftOffset animated:YES];
+            }
+        } else {
+            if (self.scrollView.contentInset.top + self.scrollView.contentSize.height > self.bounds.size.height) {
+                CGPoint bottomOffset = CGPointMake(-self.scrollView.contentInset.left, self.scrollView.contentSize.height - self.bounds.size.height - (-self.scrollView.contentInset.top));
+                [self.scrollView setContentOffset:bottomOffset animated:YES];
+            }
+        }
+    });
 }
 
 - (void)inputTextFieldEditingDidBegin {
